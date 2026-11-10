@@ -105,26 +105,15 @@ export function Book() {
     setError('');
     setSubmitting(true);
     try {
-      const res = await fetch('/api/book', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          serviceId: selectedService.id,
-          date,
-          time,
-          name,
-          phone,
-        }),
-      });
-      const body = await res.json();
-      if (!res.ok || !body.ok) {
-        setError(body.error || 'That booking could not be saved.');
-        setSubmitting(false);
+      const result = createBooking(data, { serviceId: selectedService.id, date, time, name, phone });
+      if (!result.ok) {
+        setError(result.error || 'That booking could not be saved.');
         return;
       }
-      window.location.href = `/booking-confirmation?ref=${body.booking.reference}`;
+      window.location.href = `/booking-confirmation?ref=${result.booking.reference}`;
     } catch {
       setError('Something went wrong. Please try again.');
+    } finally {
       setSubmitting(false);
     }
   };
