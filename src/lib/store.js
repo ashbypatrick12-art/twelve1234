@@ -396,8 +396,15 @@ function createStore(storage) {
   }
 
   function addSlot(data, date, time) {
-    if (!data.availability.weekly.find((w) => w.day === dayOfWeek(date))?.open) {
-      return { ok: false, error: 'Add this slot on a day the studio is open.' };
+    if (!date || !time) return { ok: false, error: 'Choose a date and time first.' };
+    if (isPastSlot(date, time)) return { ok: false, error: 'Choose a future date and time.' };
+    if (data.availability.closedDates.includes(date)) {
+      return { ok: false, error: 'This date is marked as closed. Remove it from Closed dates first.' };
+    }
+    const day = data.availability.weekly.find((w) => w.day === dayOfWeek(date));
+    if (!day?.open) return { ok: false, error: 'Add this slot on a day the studio is open.' };
+    if (time < day.start || time >= day.end) {
+      return { ok: false, error: `Choose a time between ${day.start} and ${day.end}.` };
     }
     if (data.slots.some((s) => s.date === date && s.time === time)) {
       return { ok: false, error: 'A slot at that time already exists.' };
