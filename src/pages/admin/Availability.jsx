@@ -12,6 +12,8 @@ export function Availability({ data }) {
   const [previewSlots, setPreviewSlots] = useState([]);
   const [adding, setAdding] = useState(false);
   const [slotError, setSlotError] = useState('');
+  const [newTime, setNewTime] = useState('09:00');
+  const [closedDate, setClosedDate] = useState('');
 
   const weekly = data.availability?.weekly || [];
   const closed = data.availability?.closedDates || [];
@@ -36,7 +38,6 @@ export function Availability({ data }) {
           <p className="text-sm text-muted mt-1">Set which days the studio is open.</p>
           <div className="mt-4 space-y-2">
             {weekly.map((day) => {
-              const hours = getDayHours(data, '');
               return (
                 <div key={day.day} className="flex items-center gap-3 p-3 rounded-xl bg-ivory/50 border border-line">
                   <span className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-semibold ${day.open ? 'bg-white text-charcoal border border-line' : 'bg-ivory/40 text-muted border border-line'}`}>{day.day}</span>
@@ -46,14 +47,14 @@ export function Availability({ data }) {
                       <input
                         type="time"
                         value={day.start}
-                        onChange={() => {}}
+                        onChange={(event) => updateWeeklyDay(data, day.day, { start: event.target.value })}
                         className="rounded-lg border border-line px-2 py-1 text-xs"
                         disabled={!day.open}
                       />
                       <input
                         type="time"
                         value={day.end}
-                        onChange={() => {}}
+                        onChange={(event) => updateWeeklyDay(data, day.day, { end: event.target.value })}
                         className="rounded-lg border border-line px-2 py-1 text-xs"
                         disabled={!day.open}
                       />
@@ -63,7 +64,7 @@ export function Availability({ data }) {
                     <input
                       type="checkbox"
                       checked={day.open}
-                      onChange={() => {}}
+                      onChange={(event) => updateWeeklyDay(data, day.day, { open: event.target.checked })}
                       className="rounded border-line text-sage focus:ring-sage"
                     />
                     {day.open ? 'Open' : 'Closed'}
@@ -83,14 +84,15 @@ export function Availability({ data }) {
                 <div>
                   <p className="text-sm font-medium text-charcoal">{formatDateLong(d)}</p>
                 </div>
-                <button onClick={() => {}} className="text-xs font-semibold text-amber-700 hover:text-amber-800">Remove</button>
+                <button onClick={() => removeClosedDate(data, d)} className="text-xs font-semibold text-amber-700 hover:text-amber-800">Remove</button>
               </div>
             ))}
             {closed.length === 0 ? <p className="text-sm text-muted">No closed dates set.</p> : null}
           </div>
-          <button onClick={() => {}} className="mt-3 text-sm font-semibold text-sage hover:text-sagedeep transition">
-            Add a closed date
-          </button>
+          <div className="mt-3 flex gap-2">
+            <input type="date" value={closedDate} onChange={(event) => setClosedDate(event.target.value)} className="min-w-0 flex-1 rounded-xl border border-line bg-white px-3 py-2 text-sm" />
+            <button onClick={() => { if (closedDate) { addClosedDate(data, closedDate); setClosedDate(''); } }} disabled={!closedDate} className="text-sm font-semibold text-sage hover:text-sagedeep transition disabled:opacity-40">Add date</button>
+          </div>
         </Card>
 
         <Card className="p-5 sm:p-6 lg:col-span-3">
@@ -105,23 +107,19 @@ export function Availability({ data }) {
               onChange={(e) => setDate(e.target.value)}
               className="rounded-xl border border-line bg-white px-3 py-2 text-sm"
             />
+            <input type="time" value={newTime} onChange={(event) => setNewTime(event.target.value)} className="rounded-xl border border-line bg-white px-3 py-2 text-sm" />
             <button
-              onClick={() => {}}
+              onClick={() => { const result = addSlot(data, date, newTime); setSlotError(result?.error || ''); }}
               className="rounded-xl bg-ivory border border-line px-3 py-2 text-sm font-semibold text-muted hover:bg-white transition"
             >
               <Plus className="w-4 h-4 shrink-0" aria-hidden="true" />
-              Add
+              Add slot
             </button>
-            <button
-              onClick={() => {}}
-              className="rounded-xl bg-ivory border border-line px-3 py-2 text-sm font-semibold text-muted hover:bg-white transition"
-            >
-              <Clock3 className="w-4 h-4 shrink-0" aria-hidden="true" />
-              Fill week
-            </button>
+            <span className="self-center text-xs text-muted">Add slots individually to keep availability explicit.</span>
           </div>
 
-          {!dateHasAvailability(data, date) ? <p className="text-sm text-muted mt-3">That date is closed or has no slots yet.</p> : null}
+          {slotError ? <p role="alert" className="text-sm text-amber-700 mt-3">{slotError}</p> : null}
+          {!isDateOpen(data, date) ? <p className="text-sm text-muted mt-3">That date is closed.</p> : null}
 
           <div className="mt-4 space-y-2 max-h-64 overflow-y-auto">
             {getSlotsForDate(data, date).map((slot) => {
@@ -134,7 +132,7 @@ export function Availability({ data }) {
                     <p className="text-xs text-muted">{booked ? 'Booked' : available ? 'Available' : 'Locked'}</p>
                   </div>
                   <button
-                    onClick={() => {}}
+                    onClick={() => { const result = removeSlot(data, slot.id); setSlotError(result?.error || ''); }}
                     disabled={booked}
                     className={`px-3 py-1.5 rounded-full text-xs font-semibold transition ${booked ? 'bg-amber-600/20 text-amber-700 cursor-not-allowed' : 'bg-amber-600 text-white hover:bg-amber-500'}`}
                   >
