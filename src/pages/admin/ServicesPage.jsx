@@ -16,8 +16,8 @@ export function ServicesPage({ data }) {
   const [active, setActive] = useState('all');
   const [confirming, setConfirming] = useState(null);
 
-  const services = (data.services || []).filter((s) => active === 'all' || (active === 'active' && s.active) || (active === 'inactive' && !s.active) || s.category === active);
-  const activeCount = services.filter((s) => s.active).length;
+  const allServices = data.services || [];
+  const services = allServices.filter((s) => active === 'all' || (active === 'active' && s.active) || (active === 'inactive' && !s.active) || s.category === active);
 
   return (
     <div>
@@ -33,16 +33,22 @@ export function ServicesPage({ data }) {
       </div>
 
       <div className="flex flex-wrap gap-2 mb-5">
-        {['all', 'active'].map((filter) => (
-          <button
-            key={filter}
-            onClick={() => setActive(filter)}
-            className={`px-3.5 py-1.5 rounded-full text-sm font-semibold transition ${active === filter ? 'bg-charcoal text-white' : 'bg-ivory text-muted border border-line hover:bg-white'}`}
-          >
-            {filter === 'all' ? 'All' : filter === 'active' ? 'Active' : 'Inactive'}
-            <span className="ml-1.5 text-xs opacity-70">({filter === 'all' ? services.length : active === 'active' ? activeCount : services.length - activeCount})</span>
-          </button>
-        ))}
+        {['all', 'active', 'inactive', ...CATEGORIES].map((filter) => {
+          const count = filter === 'all' ? allServices.length
+            : filter === 'active' ? allServices.filter((s) => s.active).length
+            : filter === 'inactive' ? allServices.filter((s) => !s.active).length
+            : allServices.filter((s) => s.category === filter).length;
+          return (
+            <button
+              key={filter}
+              onClick={() => setActive(filter)}
+              className={`px-3.5 py-1.5 rounded-full text-sm font-semibold transition ${active === filter ? 'bg-charcoal text-white' : 'bg-ivory text-muted border border-line hover:bg-white'}`}
+            >
+              {filter === 'all' ? 'All' : filter.charAt(0).toUpperCase() + filter.slice(1)}
+              <span className="ml-1.5 text-xs opacity-70">({count})</span>
+            </button>
+          );
+        })}
       </div>
 
       {services.length === 0 ? (
