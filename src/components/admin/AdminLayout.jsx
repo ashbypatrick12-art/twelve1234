@@ -79,7 +79,7 @@ export function AdminLayout({ children }) {
           <div className="flex min-h-[68px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-9">
             <div className="flex min-w-0 items-center gap-3">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#edf1e9] text-[#40513d] md:hidden">
-                <Sparkles size={17} strokeWidth={1.8} aria-hidden="true" />
+                <PageIcon size={17} strokeWidth={1.8} aria-hidden="true" />
               </span>
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold tracking-[-0.01em] text-[#252a25] md:text-[15px]">{current.label}</p>
