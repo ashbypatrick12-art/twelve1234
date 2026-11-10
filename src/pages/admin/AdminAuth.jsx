@@ -48,7 +48,7 @@ export function AdminAuth() {
         <div className="rounded-[28px] border border-[#e5e8df] bg-white p-6 sm:p-9 shadow-[0_20px_60px_-30px_rgba(38,48,35,0.28)]">
           <div className="mb-6"><p className="text-base font-semibold text-[#303a2e]">Welcome back</p><p className="mt-1 text-sm leading-6 text-muted">
             Demo access only. This is a demonstration MVP — no production authentication.
-          </p>
+          </p></div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
