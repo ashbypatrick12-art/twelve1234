@@ -169,7 +169,7 @@ function ServiceForm({ init }) {
     if (!Number.isFinite(Number(duration)) || Number(duration) <= 0) has.duration = true;
     setErrors(has);
     if (Object.keys(has).length > 0) return;
-    window.parent.postMessage({ type: 'SAVE_SERVICE', payload: { id: init?.id, name: name.trim(), category, description: description.trim(), price: Number(price), duration: Number(duration), image } }, '*');
+    onChange?.({ id: init?.id, name: name.trim(), category, description: description.trim(), price: Number(price), duration: Number(duration), image, active: init?.active !== false });
   };
 
   return (
@@ -217,7 +217,7 @@ function ServiceForm({ init }) {
       {errors.price && <p className="text-xs text-amber-700">Enter a valid price.</p>}
       {errors.duration && <p className="text-xs text-amber-700">Enter the duration in minutes.</p>}
       <div className="flex justify-end gap-3 pt-2">
-        <button type="button" onClick={() => window.parent.postMessage({ type: 'CLOSE_FORM', payload: null }, '*')} className="px-4 py-2.5 rounded-xl text-sm font-semibold text-muted hover:bg-ivory transition">Cancel</button>
+        <button type="button" onClick={onCancel} className="px-4 py-2.5 rounded-xl text-sm font-semibold text-muted hover:bg-ivory transition">Cancel</button>
         <button type="submit" className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-charcoal text-white hover:bg-charcoal/90 transition">Save</button>
       </div>
     </form>
