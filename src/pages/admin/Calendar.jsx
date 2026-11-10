@@ -24,6 +24,7 @@ export function Calendar({ data }) {
   const grid = dateGrid(year, month);
 
   const today = toISODate(new Date());
+  const currentISO = toISODate(current);
 
   const handleDayClick = (iso) => {
     setSelected(iso);
@@ -31,7 +32,7 @@ export function Calendar({ data }) {
   };
 
   const monthLabel = date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
-  const weeks = view === 'month' ? grid.flat() : (view === 'week' ? Array.from({ length: 7 }, (_, index) => { const iso = addDaysISO(startOfWeek(today), index); return { iso, label: formatDateMedium(iso) }; }) : [{ iso: today, label: formatDateMedium(today) }]);
+  const weeks = view === 'month' ? grid.flat() : (view === 'week' ? Array.from({ length: 7 }, (_, index) => { const iso = addDaysISO(startOfWeek(currentISO), index); return { iso, label: formatDateMedium(iso) }; }) : [{ iso: currentISO, label: formatDateMedium(currentISO) }]);
 
   return (
     <div>
@@ -66,14 +67,14 @@ export function Calendar({ data }) {
             Today
           </button>
           <button
-            onClick={() => setCurrent(new Date(current.getFullYear(), current.getMonth() - 1, 1))}
+            onClick={() => setCurrent(view === 'month' ? new Date(current.getFullYear(), current.getMonth() - 1, 1) : new Date(`${addDaysISO(currentISO, view === 'week' ? -7 : -1)}T12:00:00`))}
             className="p-2 rounded-xl text-muted hover:bg-ivory transition"
             aria-label="Previous month"
           >
             <ChevronLeft className="w-4 h-4 shrink-0" aria-hidden="true" />
           </button>
           <button
-            onClick={() => setCurrent(new Date(current.getFullYear(), current.getMonth() + 1, 1))}
+            onClick={() => setCurrent(view === 'month' ? new Date(current.getFullYear(), current.getMonth() + 1, 1) : new Date(`${addDaysISO(currentISO, view === 'week' ? 7 : 1)}T12:00:00`))}
             className="p-2 rounded-xl text-muted hover:bg-ivory transition"
             aria-label="Next month"
           >
@@ -185,7 +186,7 @@ export function Calendar({ data }) {
                   </div>
                   <div className="mt-3 flex gap-2">
                     <NavLink to="/admin/bookings" className="flex-1 text-center px-3 py-1.5 rounded-xl text-sm font-semibold bg-charcoal text-white hover:bg-charcoal/90 transition">View bookings</NavLink>
-                    <a href={`https://wa.me/256700000000?text=Hello%20Serene%20Beauty%2C%20I%27m%20booking%20an%20appointment%20reference%20${booking.reference}`} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-xl text-sm font-semibold bg-ivory border border-charcoal/10 text-charcoal hover:bg-white transition">Message on WhatsApp</a>
+                    <a href={`https://wa.me/${String(booking.customerPhone || '').replace(/\\D/g, '')}?text=${encodeURIComponent(`Hello, I’m following up about your appointment ${booking.reference}.`)}`} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-xl text-sm font-semibold bg-ivory border border-charcoal/10 text-charcoal hover:bg-white transition">Message on WhatsApp</a>
                   </div>
                 </div>
               ))}
