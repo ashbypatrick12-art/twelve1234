@@ -12,6 +12,31 @@ function createStore(storage) {
   let state = loadState();
   const listeners = new Set();
 
+  if (typeof window !== 'undefined') {
+    window.addEventListener('storage', (event) => {
+      if (event.key !== STORAGE_KEY || !event.newValue) return;
+      try {
+        const incoming = JSON.parse(event.newValue);
+        if (
+          incoming &&
+          typeof incoming.version === 'number' &&
+          Array.isArray(incoming.services) &&
+          Array.isArray(incoming.bookings) &&
+          Array.isArray(incoming.slots) &&
+          Array.isArray(incoming.customers) &&
+          incoming.availability &&
+          Array.isArray(incoming.availability.weekly) &&
+          Array.isArray(incoming.availability.closedDates)
+        ) {
+          state = incoming;
+          emit();
+        }
+      } catch (error) {
+        console.error('Gency Bookings: failed to sync another tab', error);
+      }
+    });
+  }
+
   function emit() {
     listeners.forEach((listener) => listener());
   }
@@ -25,8 +50,7 @@ function createStore(storage) {
     return state;
   }
 
-  function persist(next = state) {
-    state = next;
+  function persist() {
     if (storageBackend) {
       try {
         storageBackend.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -34,7 +58,6 @@ function createStore(storage) {
         console.error('Gency Bookings: could not persist data', error);
       }
     }
-    emit();
   }
 
   function loadState() {
@@ -50,9 +73,7 @@ function createStore(storage) {
           Array.isArray(parsed.bookings) &&
           Array.isArray(parsed.slots) &&
           Array.isArray(parsed.customers) &&
-          parsed.availability &&
-          Array.isArray(parsed.availability.weekly) &&
-          Array.isArray(parsed.availability.closedDates)
+          Array.isArray(parsed.availability)
         ) {
           return parsed;
         }
@@ -150,7 +171,7 @@ function createStore(storage) {
         updatedAt: new Date().toISOString(),
       });
     }
-    persist({ ...data, customers: nextCustomers });
+    persist();
     return nextCustomers;
   }
 
@@ -193,23 +214,23 @@ function createStore(storage) {
       createdAt: new Date().toISOString(),
     };
     services.push(service);
-    persist({ ...data, services });
+    persist();
     return { ok: true, service };
   }
 
   function updateService(data, id, patch) {
-    const nextServices = (data?.services || []).map((service) => (
-      service.id === id ? { ...service, ...patch, id } : service
-    ));
-    persist({ ...data, services: nextServices });
+    const nextServices = (data?.services || []).map((service) => {
+      if (service.id !== id) return service;
+      return { ...service, ...patch, id };
+    });
+    persist();
     return { ok: true, services: nextServices };
   }
 
   function removeService(data, id) {
     const service = (data?.services || []).find((item) => item.id === id);
     if (!service) return { ok: false, error: 'Service not found.' };
-    const nextServices = (data?.services || []).filter((item) => item.id !== id);
-    persist({ ...data, services: nextServices });
+    persist();
     return { ok: true, serviceId: service.id, serviceName: service.name };
   }
 
@@ -451,36 +472,31 @@ export function createTestStore() {
   return createStore();
 }
 
-function getAppStore() {
-  if (!appStore) appStore = createStore();
-  return appStore;
-}
-
-export const isDateOpen = (...args) => getAppStore().isDateOpen(...args);
-export const getDayHours = (...args) => getAppStore().getDayHours(...args);
-export const getSlotsForDate = (...args) => getAppStore().getSlotsForDate(...args);
-export const getBookedTimes = (...args) => getAppStore().getBookedTimes(...args);
-export const getAvailableSlots = (...args) => getAppStore().getAvailableSlots(...args);
-export const dateHasAvailability = (...args) => getAppStore().dateHasAvailability(...args);
-export const isSlotBooked = (...args) => getAppStore().isSlotBooked(...args);
-export const getOpenTimeRange = (...args) => getAppStore().getOpenTimeRange(...args);
-export const nextOpenDate = (...args) => getAppStore().nextOpenDate(...args);
-export const getCustomer = (...args) => getAppStore().getCustomer(...args);
-export const upsertCustomer = (...args) => getAppStore().upsertCustomer(...args);
-export const getActiveServices = (...args) => getAppStore().getActiveServices(...args);
-export const getServicesByCategory = (...args) => getAppStore().getServicesByCategory(...args);
-export const addService = (...args) => getAppStore().addService(...args);
-export const updateService = (...args) => getAppStore().updateService(...args);
-export const removeService = (...args) => getAppStore().removeService(...args);
-export const createBooking = (...args) => getAppStore().createBooking(...args);
-export const cancelBooking = (...args) => getAppStore().cancelBooking(...args);
-export const completeBooking = (...args) => getAppStore().completeBooking(...args);
-export const getOpenDays = (...args) => getAppStore().getOpenDays(...args);
-export const addClosedDate = (...args) => getAppStore().addClosedDate(...args);
-export const removeClosedDate = (...args) => getAppStore().removeClosedDate(...args);
-export const updateWeeklyDay = (...args) => getAppStore().updateWeeklyDay(...args);
-export const addSlot = (...args) => getAppStore().addSlot(...args);
-export const removeSlot = (...args) => getAppStore().removeSlot(...args);
-export const isAdminAuthed = (...args) => getAppStore().isAdminAuthed(...args);
-export const loginAdmin = (...args) => getAppStore().loginAdmin(...args);
-export const logoutAdmin = (...args) => getAppStore().logoutAdmin(...args);
+export const isDateOpen = createTestStore().isDateOpen;
+export const getDayHours = createTestStore().getDayHours;
+export const getSlotsForDate = createTestStore().getSlotsForDate;
+export const getBookedTimes = createTestStore().getBookedTimes;
+export const getAvailableSlots = createTestStore().getAvailableSlots;
+export const dateHasAvailability = createTestStore().dateHasAvailability;
+export const isSlotBooked = createTestStore().isSlotBooked;
+export const getOpenTimeRange = createTestStore().getOpenTimeRange;
+export const nextOpenDate = createTestStore().nextOpenDate;
+export const getCustomer = createTestStore().getCustomer;
+export const upsertCustomer = createTestStore().upsertCustomer;
+export const getActiveServices = createTestStore().getActiveServices;
+export const getServicesByCategory = createTestStore().getServicesByCategory;
+export const addService = createTestStore().addService;
+export const updateService = createTestStore().updateService;
+export const removeService = createTestStore().removeService;
+export const createBooking = createTestStore().createBooking;
+export const cancelBooking = createTestStore().cancelBooking;
+export const completeBooking = createTestStore().completeBooking;
+export const getOpenDays = createTestStore().getOpenDays;
+export const addClosedDate = createTestStore().addClosedDate;
+export const removeClosedDate = createTestStore().removeClosedDate;
+export const updateWeeklyDay = createTestStore().updateWeeklyDay;
+export const addSlot = createTestStore().addSlot;
+export const removeSlot = createTestStore().removeSlot;
+export const isAdminAuthed = createTestStore().isAdminAuthed;
+export const loginAdmin = createTestStore().loginAdmin;
+export const logoutAdmin = createTestStore().logoutAdmin;
