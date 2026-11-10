@@ -105,15 +105,26 @@ export function Book() {
     setError('');
     setSubmitting(true);
     try {
-      const result = createBooking(data, { serviceId: selectedService.id, date, time, name, phone });
-      if (!result.ok) {
-        setError(result.error || 'That booking could not be saved.');
+      const res = await fetch('/api/book', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          serviceId: selectedService.id,
+          date,
+          time,
+          name,
+          phone,
+        }),
+      });
+      const body = await res.json();
+      if (!res.ok || !body.ok) {
+        setError(body.error || 'That booking could not be saved.');
+        setSubmitting(false);
         return;
       }
-      window.location.href = `/booking-confirmation?ref=${result.booking.reference}`;
+      window.location.href = `/booking-confirmation?ref=${body.booking.reference}`;
     } catch {
       setError('Something went wrong. Please try again.');
-    } finally {
       setSubmitting(false);
     }
   };
@@ -148,23 +159,8 @@ export function Book() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
-                {[
-                  { id: 'svc-silk-press', category: 'Hair', name: 'Signature Silk Press', price: 120000, duration: 90, image: 'service-silk-press' },
-                  { id: 'svc-precision-cut', category: 'Hair', name: 'Precision Cut & Style', price: 80000, duration: 60, image: 'service-precision-cut' },
-                  { id: 'svc-texture', category: 'Hair', name: 'Curl & Texture Styling', price: 95000, duration: 75, image: 'service-texture' },
-                  { id: 'svc-scalp-ritual', category: 'Hair', name: 'Scalp & Steam Ritual', price: 70000, duration: 60, image: 'service-scalp-ritual' },
-                  { id: 'svc-gel-manicure', category: 'Nails', name: 'Classic Gel Manicure', price: 55000, duration: 45, image: 'service-gel-manicure' },
-                  { id: 'svc-pedicure', category: 'Nails', name: 'Luxury Spa Pedicure', price: 75000, duration: 60, image: 'service-pedicure' },
-                  { id: 'svc-almond-set', category: 'Nails', name: 'Almond Sculpted Set', price: 110000, duration: 90, image: 'service-almond-set' },
-                  { id: 'svc-nail-art', category: 'Nails', name: 'Nail Art & Detail', price: 35000, duration: 30, image: 'service-nail-art' },
-                  { id: 'svc-soft-glam', category: 'Makeup', name: 'Soft Glam Session', price: 150000, duration: 90, image: 'service-soft-glam' },
-                  { id: 'svc-bridal', category: 'Makeup', name: 'Bridal Glow Package', price: 350000, duration: 150, image: 'service-bridal' },
-                  { id: 'svc-natural-look', category: 'Makeup', name: 'Natural Day Look', price: 95000, duration: 60, image: 'service-natural-look' },
-                  { id: 'svc-radiance-facial', category: 'Skincare', name: 'Radiance Facial', price: 130000, duration: 75, image: 'service-radiance-facial' },
-                  { id: 'svc-hydra-glow', category: 'Skincare', name: 'Hydra Glow Treatment', price: 160000, duration: 90, image: 'service-hydra-glow' },
-                  { id: 'svc-calm-clear', category: 'Skincare', name: 'Calm & Clear Facial', price: 110000, duration: 60, image: 'service-calm-clear' },
-                ]
-                  .filter((s) => !category || s.category === category)
+                {(data.services || [])
+                  .filter((service) => service.active && (!category || service.category === category))
                   .map((service) => (
                     <button
                       key={service.id}
@@ -179,7 +175,7 @@ export function Book() {
                       }`}
                     >
                       <img
-                        src={`/images/${service.image}.jpg`}
+                        src={service.image?.startsWith('/') ? service.image : `/images/${service.image}.jpg`}
                         alt={service.name}
                         className="w-full h-32 object-cover rounded-xl mb-3"
                         loading="lazy"
