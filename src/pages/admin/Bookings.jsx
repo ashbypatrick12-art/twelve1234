@@ -1,6 +1,6 @@
-import { CircleCheck, X } from 'lucide-react';
+import { CircleCheck, Search, X } from 'lucide-react';
 import { useState } from 'react';
-import { useStore } from '../../lib/store';
+import { cancelBooking, completeBooking } from '../../lib/store';
 import { formatDateLong, formatTime, formatUGX, formatPhone, formatDuration } from '../../lib/format';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
@@ -43,12 +43,12 @@ export function Bookings({ data }) {
   const dateOptions = [...new Set(bookings.map((b) => b.date))].sort();
 
   const handleCancel = () => {
-    const res = data && data.cancelBooking(selected.id);
+    if (confirmCancel?.id) cancelBooking(data, confirmCancel.id);
     setConfirmCancel(null);
   };
 
   const handleComplete = () => {
-    const res = data && data.completeBooking(selected.id);
+    if (confirmComplete?.id) completeBooking(data, confirmComplete.id);
     setConfirmComplete(null);
   };
 
@@ -172,7 +172,7 @@ export function Bookings({ data }) {
           </>
         }
       >
-        <p className="text-sm text-muted">Cancel booking <span className="font-mono">{selected?.reference}</span> for {selected?.customerName}?</p>
+        <p className="text-sm text-muted">Cancel booking <span className="font-mono">{confirmCancel?.reference}</span> for {confirmCancel?.customerName}?</p>
       </Modal>
 
       <Modal
@@ -188,7 +188,7 @@ export function Bookings({ data }) {
           </>
         }
       >
-        <p className="text-sm text-muted">Mark booking <span className="font-mono">{selected?.reference}</span> for {selected?.customerName} as completed?</p>
+        <p className="text-sm text-muted">Mark booking <span className="font-mono">{confirmComplete?.reference}</span> for {confirmComplete?.customerName} as completed?</p>
       </Modal>
     </div>
   );
