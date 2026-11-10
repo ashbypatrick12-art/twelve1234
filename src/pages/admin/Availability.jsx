@@ -90,7 +90,7 @@ export function Availability({ data }) {
             {closed.length === 0 ? <p className="text-sm text-muted">No closed dates set.</p> : null}
           </div>
           <div className="mt-3 flex gap-2">
-            <input type="date" value={closedDate} onChange={(event) => setClosedDate(event.target.value)} className="min-w-0 flex-1 rounded-xl border border-line bg-white px-3 py-2 text-sm" />
+            <input type="date" min={toISODate(new Date())} value={closedDate} onChange={(event) => setClosedDate(event.target.value)} className="min-w-0 flex-1 rounded-xl border border-line bg-white px-3 py-2 text-sm" />
             <button onClick={() => { if (closedDate) { addClosedDate(data, closedDate); setClosedDate(''); } }} disabled={!closedDate} className="text-sm font-semibold text-sage hover:text-sagedeep transition disabled:opacity-40">Add date</button>
           </div>
         </Card>
@@ -103,13 +103,14 @@ export function Availability({ data }) {
           <div className="mt-4 flex flex-wrap gap-2">
             <input
               type="date"
+              min={toISODate(new Date())}
               value={date}
-              onChange={(e) => setDate(e.target.value)}
+              onChange={(e) => { setDate(e.target.value); setSlotError(''); }}
               className="rounded-xl border border-line bg-white px-3 py-2 text-sm"
             />
             <input type="time" value={newTime} onChange={(event) => setNewTime(event.target.value)} className="rounded-xl border border-line bg-white px-3 py-2 text-sm" />
             <button
-              onClick={() => { const result = addSlot(data, date, newTime); setSlotError(result?.error || ''); }}
+              onClick={() => { const result = addSlot(data, date, newTime); setSlotError(result?.error || (result?.ok ? 'Availability slot added.' : '')); }}
               className="rounded-xl bg-ivory border border-line px-3 py-2 text-sm font-semibold text-muted hover:bg-white transition"
             >
               <Plus className="w-4 h-4 shrink-0" aria-hidden="true" />
