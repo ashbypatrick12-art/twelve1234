@@ -1,5 +1,5 @@
 import { Pencil, Plus } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { addService, updateService, removeService } from '../../lib/store';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -15,29 +15,9 @@ export function ServicesPage({ data }) {
   const [editing, setEditing] = useState(null);
   const [active, setActive] = useState('all');
   const [confirming, setConfirming] = useState(null);
-  const [formValues, setFormValues] = useState(null);
 
   const services = (data.services || []).filter((s) => active === 'all' || (active === 'active' && s.active) || (active === 'inactive' && !s.active) || s.category === active);
   const activeCount = services.filter((s) => s.active).length;
-
-  const handleSave = () => {
-    if (!formValues) return;
-    const payload = {
-      name: formValues.name,
-      category: formValues.category,
-      description: formValues.description,
-      price: Number(formValues.price),
-      duration: Number(formValues.duration),
-      image: formValues.image,
-      active: formValues.active !== false,
-    };
-    const result = editing
-      ? updateService(data, editing.id, payload)
-      : addService(data, payload);
-    if (!result.ok) return;
-    setOpen(false);
-    setEditing(null);
-  };
 
   return (
     <div>
@@ -46,7 +26,7 @@ export function ServicesPage({ data }) {
           <h3 className="font-display text-2xl">Services</h3>
           <p className="text-sm text-muted mt-1">Add, edit and disable the menu. Historical bookings keep their original details.</p>
         </div>
-        <Button variant="primary" onClick={() => { setEditing(null); setFormValues(null); setOpen(true); }}>
+        <Button variant="primary" onClick={() => { setEditing(null); setOpen(true); }}>
           <Plus className="w-4 h-4 shrink-0" aria-hidden="true" />
           Add service
         </Button>
@@ -122,11 +102,10 @@ export function ServicesPage({ data }) {
         actions={
           <>
             <button onClick={() => setOpen(false)} className="px-4 py-2.5 rounded-xl text-sm font-semibold text-muted hover:bg-ivory transition">Cancel</button>
-            <button onClick={handleSave} className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-charcoal text-white hover:bg-charcoal/90 transition">Save</button>
           </>
         }
       >
-        <ServiceForm key={editing?.id || 'new'} init={editing} onChange={setFormValues} onCancel={() => setOpen(false)} />
+        <ServiceForm key={editing?.id || 'new'} init={editing} data={data} onSaved={() => { setOpen(false); setEditing(null); }} onCancel={() => setOpen(false)} />
       </Modal>
 
       <Modal
@@ -148,7 +127,7 @@ export function ServicesPage({ data }) {
   );
 }
 
-function ServiceForm({ init, onChange, onCancel }) {
+function ServiceForm({ init, data, onSaved, onCancel }) {
   const [name, setName] = useState(init?.name || '');
   const [category, setCategory] = useState(init?.category || 'Hair');
   const [description, setDescription] = useState(init?.description || '');
@@ -156,7 +135,7 @@ function ServiceForm({ init, onChange, onCancel }) {
   const [duration, setDuration] = useState(init?.duration || '');
   const [image, setImage] = useState(init?.image || '/images/service-silk-press.jpg');
   const [errors, setErrors] = useState({});
-  useEffect(() => { onChange?.({ id: init?.id, name, category, description, price, duration, image, active: init?.active !== false }); }, [name, category, description, price, duration, image, init, onChange]);
+  const [submitError, setSubmitError] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -169,7 +148,14 @@ function ServiceForm({ init, onChange, onCancel }) {
     if (!Number.isFinite(Number(duration)) || Number(duration) <= 0) has.duration = true;
     setErrors(has);
     if (Object.keys(has).length > 0) return;
-    onChange?.({ id: init?.id, name: name.trim(), category, description: description.trim(), price: Number(price), duration: Number(duration), image, active: init?.active !== false });
+    const payload = { name: name.trim(), category, description: description.trim(), price: Number(price), duration: Number(duration), image, active: init?.active !== false };
+    const result = init ? updateService(data, init.id, payload) : addService(data, payload);
+    if (!result.ok) {
+      setSubmitError(result.error || 'Could not save this service. Please check the details.');
+      return;
+    }
+    setSubmitError('');
+    onSaved?.();
   };
 
   return (
@@ -211,11 +197,12 @@ function ServiceForm({ init, onChange, onCancel }) {
           </div>
         </div>
       </div>
-      {errors.name && <p className="text-xs text-amber-700">{errors.name}</p>}
+      {errors.name && <p className="text-xs text-amber-700">Please enter a service name.</p>}
       {errors.category && <p className="text-xs text-amber-700">Please choose a category.</p>}
       {errors.description && <p className="text-xs text-amber-700">Please write a description.</p>}
       {errors.price && <p className="text-xs text-amber-700">Enter a valid price.</p>}
       {errors.duration && <p className="text-xs text-amber-700">Enter the duration in minutes.</p>}
+      {submitError && <p role="alert" className="text-xs text-amber-700">{submitError}</p>}
       <div className="flex justify-end gap-3 pt-2">
         <button type="button" onClick={onCancel} className="px-4 py-2.5 rounded-xl text-sm font-semibold text-muted hover:bg-ivory transition">Cancel</button>
         <button type="submit" className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-charcoal text-white hover:bg-charcoal/90 transition">Save</button>
