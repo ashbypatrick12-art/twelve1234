@@ -307,7 +307,7 @@ export function Book() {
 
               <div className="flex gap-3">
                 <Button variant="secondary" onClick={() => setStep(-1)}>
-                  Back
+                  <ArrowLeft size={16} aria-hidden="true" /> Back
                 </Button>
                 <Button variant="primary" onClick={handleNext} disabled={!time}>
                   Continue <ArrowRight size={17} strokeWidth={1.8} aria-hidden="true" />
@@ -384,7 +384,7 @@ export function Book() {
 
               <div className="flex gap-3">
                 <Button variant="secondary" onClick={handleBack}>
-                  Back
+                  <ArrowLeft size={16} aria-hidden="true" /> Back
                 </Button>
                 <Button variant="primary" onClick={handleSubmit} disabled={submitting}>
                   {submitting ? 'Saving…' : 'Confirm booking'} <Check size={17} strokeWidth={2} aria-hidden="true" />
