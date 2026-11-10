@@ -1,4 +1,4 @@
-import { CircleCheck } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, CircleCheck } from 'lucide-react';
 import { useState, useMemo, useCallback } from 'react';
 import { NavLink, useSearchParams, useParams } from 'react-router-dom';
 import { useStore, createBooking, isSlotBooked, dateHasAvailability, getAvailableSlots } from '../../lib/store';
@@ -169,7 +169,7 @@ export function Book() {
                         className="w-full h-32 object-cover rounded-xl mb-3"
                         loading="lazy"
                       />
-                      <h3 className="font-semibold text-base">{service.name}</h3>
+                      <div className="flex items-start justify-between gap-2"><h3 className="font-semibold text-base">{service.name}</h3>{selectedService?.id === service.id ? <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#40513d] text-white"><Check size={14} strokeWidth={2.5} aria-hidden="true" /></span> : null}</div>
                       <p className="text-sm text-muted mt-1">{service.category}</p>
                       <p className="text-lg font-semibold mt-2">{formatUGX(service.price)}</p>
                     </button>
@@ -194,7 +194,7 @@ export function Book() {
                   Back to services
                 </NavLink>
                 <Button variant="primary" onClick={handleNext} disabled={!selectedService}>
-                  Continue
+                  Continue <ArrowRight size={17} strokeWidth={1.8} aria-hidden="true" />
                 </Button>
               </div>
             </div>
@@ -255,10 +255,10 @@ export function Book() {
 
               <div className="flex gap-3">
                 <Button variant="secondary" onClick={() => setStep(-1)}>
-                  Back
+                  <ArrowLeft size={16} aria-hidden="true" /> Back
                 </Button>
                 <Button variant="primary" onClick={handleNext} disabled={!date || !dateHasAvailability(data, date)}>
-                  Continue
+                  Continue <ArrowRight size={17} strokeWidth={1.8} aria-hidden="true" />
                 </Button>
               </div>
             </div>
@@ -310,7 +310,7 @@ export function Book() {
                   Back
                 </Button>
                 <Button variant="primary" onClick={handleNext} disabled={!time}>
-                  Continue
+                  Continue <ArrowRight size={17} strokeWidth={1.8} aria-hidden="true" />
                 </Button>
               </div>
             </div>
@@ -352,10 +352,10 @@ export function Book() {
 
               <div className="flex gap-3">
                 <Button variant="secondary" onClick={handleBack}>
-                  Back
+                  <ArrowLeft size={16} aria-hidden="true" /> Back
                 </Button>
                 <Button variant="primary" onClick={handleNext}>
-                  Continue
+                  Continue <ArrowRight size={17} strokeWidth={1.8} aria-hidden="true" />
                 </Button>
               </div>
             </div>
@@ -387,7 +387,7 @@ export function Book() {
                   Back
                 </Button>
                 <Button variant="primary" onClick={handleSubmit} disabled={submitting}>
-                  {submitting ? 'Saving…' : 'Confirm booking'}
+                  {submitting ? 'Saving…' : 'Confirm booking'} <Check size={17} strokeWidth={2} aria-hidden="true" />
                 </Button>
               </div>
             </div>
