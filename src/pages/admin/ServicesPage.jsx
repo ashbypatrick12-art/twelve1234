@@ -1,6 +1,6 @@
 import { Pencil, Plus } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { addService, updateService, removeService } from '../../lib/store';
+import { useState } from 'react';
+import { useStore, addService, updateService, removeService } from '../../lib/store';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
@@ -16,25 +16,24 @@ export function ServicesPage({ data }) {
   const [active, setActive] = useState('all');
   const [confirming, setConfirming] = useState(null);
 
-  const services = (data.services || []).filter((s) => active === 'all' || (active === 'active' && s.active) || (active === 'inactive' && !s.active) || s.category === active);
+  const services = data.services?.filter((s) => active === 'all' || s.category === active || (active === 'active' && s.active) || (active === 'inactive' && !s.active) || (active === 'disabled' && !s.active));
   const activeCount = services.filter((s) => s.active).length;
-  const [formValues, setFormValues] = useState(null);
 
   const handleSave = () => {
     if (!editing) {
       const res = addService(data, {
-        name: formValues.name, category: formValues.category, description: formValues.description, price: Number(formValues.price), duration: Number(formValues.duration), image: formValues.image,
+        name: form.name, category: form.category, description: form.description, price: Number(form.price), duration: Number(form.duration), image: form.image,
       });
       if (!res.ok) { setValue('name', res.field, res.error); return; }
     } else {
-      const res = updateService(data, editing.id, { name: formValues.name, category: formValues.category, description: formValues.description, price: Number(formValues.price), duration: Number(formValues.duration), image: formValues.image, active: formValues.active !== false });
+      const res = updateService(data, editing.id, { name: form.name, category: form.category, description: form.description, price: Number(form.price), duration: Number(form.duration), image: form.image, active: form.active !== false });
       if (!res.ok) { setValue('name', res.field, res.error); return; }
     }
     setOpen(false);
   };
 
   const setValue = (field, value, error) => {
-    console.warn('Service validation:', field, value, error);
+    // placeholder helper — real validation handled inline
   };
 
   return (
@@ -44,7 +43,7 @@ export function ServicesPage({ data }) {
           <h3 className="font-display text-2xl">Services</h3>
           <p className="text-sm text-muted mt-1">Add, edit and disable the menu. Historical bookings keep their original details.</p>
         </div>
-        <Button variant="primary" onClick={() => { setEditing(null); setFormValues(null); setOpen(true); }}>
+        <Button variant="primary" onClick={() => setOpen(true)}>
           <Plus className="w-4 h-4 shrink-0" aria-hidden="true" />
           Add service
         </Button>
@@ -78,7 +77,7 @@ export function ServicesPage({ data }) {
                 <div className="flex items-start justify-between gap-2">
                   <h4 className="font-semibold text-base">{service.name}</h4>
                   <button
-                    onClick={() => { setEditing(service); setFormValues(service); setOpen(true); }}
+                    onClick={() => setEditing(service)}
                     className="p-1.5 rounded-xl text-muted hover:text-charcoal hover:bg-ivory transition"
                     aria-label={`Edit ${service.name}`}
                   >
@@ -94,7 +93,7 @@ export function ServicesPage({ data }) {
                     <input
                       type="checkbox"
                       defaultChecked={service.active}
-                      onChange={() => {}}
+                      onChange={(event) => updateService(data, service.id, { active: event.target.checked })}
                       className="rounded border-line text-sage focus:ring-sage"
                     />
                   </label>
@@ -124,7 +123,11 @@ export function ServicesPage({ data }) {
           </>
         }
       >
-        <ServiceForm key={editing?.id || 'new'} init={editing} onChange={setFormValues} />
+        {editing ? (
+          <ServiceForm init={editing} />
+        ) : (
+          <ServiceForm />
+        )}
       </Modal>
 
       <Modal
@@ -146,7 +149,7 @@ export function ServicesPage({ data }) {
   );
 }
 
-function ServiceForm({ init, onChange }) {
+function ServiceForm({ init }) {
   const [name, setName] = useState(init?.name || '');
   const [category, setCategory] = useState(init?.category || 'Hair');
   const [description, setDescription] = useState(init?.description || '');
@@ -154,7 +157,6 @@ function ServiceForm({ init, onChange }) {
   const [duration, setDuration] = useState(init?.duration || '');
   const [image, setImage] = useState(init?.image || '/images/service-silk-press.jpg');
   const [errors, setErrors] = useState({});
-  useEffect(() => { onChange?.({ id: init?.id, name, category, description, price, duration, image, active: init?.active !== false }); }, [name, category, description, price, duration, image, init, onChange]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
