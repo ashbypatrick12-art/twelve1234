@@ -1,4 +1,4 @@
-import { CalendarCheck, CalendarDays, Clock3, LayoutDashboard, Scissors, Sparkles, Users, X } from 'lucide-react';
+import { CalendarCheck, CalendarDays, Clock3, LayoutDashboard, Scissors, Sparkles, Users } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { cn } from '../../lib/format';
 
@@ -86,13 +86,7 @@ export function AdminLayout({ children }) {
         <div className="flex-1 flex flex-col min-h-0">
           <header className="md:hidden flex items-center justify-between border-b border-line/70 h-16 px-4 bg-ivory">
             <p className="text-sm font-semibold">Gency Bookings</p>
-            <button
-              onClick={() => {}}
-              className="p-2 rounded-full hover:bg-ivory text-muted"
-              aria-label="Close menu"
-            >
-              <X className="w-5 h-5 shrink-0" aria-hidden="true" />
-            </button>
+            <NavLink to="/" className="text-xs font-semibold text-sage hover:text-sagedeep">View website</NavLink>
           </header>
           <div className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
             {children}

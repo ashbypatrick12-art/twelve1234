@@ -184,7 +184,7 @@ export function Calendar({ data }) {
                     <div><span className="text-muted">Reference</span><p className="font-mono text-xs text-sage">{booking.reference}</p></div>
                   </div>
                   <div className="mt-3 flex gap-2">
-                    <button className="flex-1 px-3 py-1.5 rounded-xl text-sm font-semibold bg-charcoal text-white hover:bg-charcoal/90 transition">View details</button>
+                    <NavLink to="/admin/bookings" className="flex-1 text-center px-3 py-1.5 rounded-xl text-sm font-semibold bg-charcoal text-white hover:bg-charcoal/90 transition">View bookings</NavLink>
                     <a href={`https://wa.me/256700000000?text=Hello%20Serene%20Beauty%2C%20I%27m%20booking%20an%20appointment%20reference%20${booking.reference}`} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 rounded-xl text-sm font-semibold bg-ivory border border-charcoal/10 text-charcoal hover:bg-white transition">Message on WhatsApp</a>
                   </div>
                 </div>
