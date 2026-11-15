@@ -11,20 +11,15 @@ export function Button({
   return (
     <button
       className={cn(
-        'inline-flex items-center justify-center gap-2 font-semibold rounded-full transition',
+        'inline-flex items-center justify-center gap-2 whitespace-nowrap font-semibold rounded-full transition',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-sage focus-visible:ring-offset-2 focus-visible:ring-offset-ivory',
-        'active:scale-[0.98]',
-        'disabled:opacity-40 disabled:pointer-events-none',
+        'active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none',
         Object.entries({
-          'bg-ivory text-charcoal border border-charcoal/10 hover:bg-white hover:shadow-soft':
-            variant === 'ghost',
-          'bg-charcoal text-white hover:bg-charcoal/90':
-            variant === 'primary',
-          'bg-ivory text-charcoal border border-ivory hover:bg-white hover:shadow-soft':
-            variant === 'secondary',
-          'bg-sage text-white hover:bg-sagedeep':
-            variant === 'accent',
-          'w-11 h-11': size === 'icon',
+          'bg-ivory text-charcoal border border-charcoal/10 hover:bg-white hover:shadow-soft': variant === 'ghost',
+          'bg-charcoal text-white hover:bg-charcoal/90': variant === 'primary',
+          'bg-ivory text-charcoal border border-ivory hover:bg-white hover:shadow-soft': variant === 'secondary',
+          'bg-sage text-white hover:bg-sagedeep': variant === 'accent',
+          'w-11 h-11 p-0': size === 'icon',
           'px-5 py-3': size === 'sm',
           'px-6 py-3.5': size === 'md',
           'px-7 py-4': size === 'lg',
@@ -36,6 +31,8 @@ export function Button({
       )}
       disabled={disabled}
       {...props}
-    />
+    >
+      <span className="inline-flex items-center justify-center gap-2 leading-normal">{children}</span>
+    </button>
   );
 }

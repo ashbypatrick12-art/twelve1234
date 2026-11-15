@@ -202,3 +202,42 @@ h1 em, h2 em { color: #67765c; font-weight: 400; }
   .studio-story { grid-template-columns: 1fr; gap: 35px; padding-top: 10px; }.story-photo img { aspect-ratio: 1.1; }.story-copy > p:not(.eyebrow) { font-size: 13px; }.booking-intro { grid-template-columns: 1fr; gap: 24px; }.booking-intro li { padding: 20px 0; }.footer-top { grid-template-columns: 1fr 1fr; gap: 35px 20px; }.footer-location { grid-column: 1/-1; }.footer-location p { margin-top: 10px; }.studio-footer { padding: 40px 24px 25px; }.footer-bottom { gap: 20px; font-size: 9px; line-height: 1.6; margin-top: 30px; }.inner-page { padding: 35px 16px 50px; }.inner-page > div > .max-w-4xl { padding-inline: 0; }.inner-page .section-title__title { font-size: 32px; }.inner-page .section-title__description { font-size: 14px; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+
+/* Admin dashboard: keep every section inside the available viewport. */
+.admin-shell,
+.admin-main,
+.admin-content {
+  min-width: 0;
+  width: 100%;
+}
+.admin-content > * ,
+.admin-content .grid > * {
+  min-width: 0;
+  max-width: 100%;
+}
+.admin-content input,
+.admin-content select,
+.admin-content textarea {
+  max-width: 100%;
+}
+.admin-mobile-nav {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior-x: contain;
+}
+.admin-mobile-nav::-webkit-scrollbar {
+  display: none;
+}
+@media (max-width: 767px) {
+  .admin-content {
+    padding: 16px;
+  }
+  .admin-content .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+  .admin-content button,
+  .admin-content a {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
